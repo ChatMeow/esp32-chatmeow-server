@@ -1,0 +1,16 @@
+revchatgpt
+Cython
+librosa
+matplotlib
+numpy
+phonemizer
+scipy
+torch
+torchvision
+Unidecode
+ffmpeg
+jamo
+cn2an
+pypinyin
+jieba
+pyopenjtalk
