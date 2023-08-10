@@ -13,9 +13,12 @@ def save_vits_wav(text, uuid):
         vits = Vits()
         status, voice = vits.get_vits_voice_tuple(text)
         if not status:
-            logging.error("vits音频文件生成失败，请检查配置文件参数")
+            logging.error("vits音频文件生成失败 请检查配置文件参数")
             return False
         try:
+            if not os.path.exists(os.path.join(os.getcwd(), 'voice_tmp')):
+                logging.info("创建文件夹voice_tmp存放临时wav文件")
+                os.mkdir(os.path.join(os.getcwd(), 'voice_tmp'))
             scaled = np.int16(voice[1] / np.max(np.abs(voice[1])) * 32767)
             file_path = os.path.join(os.getcwd(), 'voice_tmp', 'v' + uuid + '.wav')
             write(file_path, 22050, scaled)
@@ -54,6 +57,11 @@ class Vits:
         model_folder = vits_config['model_folder']
         self.model_path = os.path.join(os.getcwd(), model_folder, vits_config['model_name'])
         self.config_path = os.path.join(os.getcwd(), model_folder, vits_config['config_name'])
+        if not os.path.exists(os.path.join(os.getcwd(), model_folder)):
+                logging.error("没有找到配置文件夹[{}]".format(model_folder))
+                logging.info("创建文件夹[{}] 请将模型文件和配置文件放入其中".format(model_folder))
+                os.mkdir(os.path.join(os.getcwd(), model_folder))
+                exit(0)
         if not os.path.exists(self.model_path) or not os.path.exists(self.config_path):
             logging.error("{}文件夹中没有模型[{}]或配置文件[{}]".format(model_folder, self.model_path, self.config_path))
             exit(1)
@@ -83,7 +91,7 @@ class Vits:
         elif language == 'mix':
             text = f"{text}"
         else:
-            logging.error('vits：错误的语言，请检查配置文件')
+            logging.error('vits 错误的语言 请检查配置文件')
             return False, None
         stn_tst, clean_text = get_text(text, self.hps_ms)
         with no_grad():

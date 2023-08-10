@@ -190,7 +190,7 @@ Temporary Items
 
 # Application
 /.vscode
-/model/*
-/voice_tmp/*
+/model
+/voice_tmp
 openai.ini
 !/meow_chatgpt/vits/monotonic_align/core.cp38-win_amd64.pyd
