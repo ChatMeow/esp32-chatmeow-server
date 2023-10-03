@@ -18,8 +18,8 @@ def generate_if_not_config_exists() -> bool:
     config = ConfigParser()
     config.add_section("OpenAI")
     config["OpenAI"]["access_token"] = "访问https://chat.openai.com/api/auth/session得到accesstoken *注意不是OpenAI API*"
-    # config["OpenAI"]["email"] = ""
-    # config["OpenAI"]["password"] = ""
+    config["OpenAI"]["email"] = ""
+    config["OpenAI"]["password"] = ""
     config["OpenAI"]["conversation_id"] = ""
     config["OpenAI"]["prompt"] = ""
     with open("./openai.ini", "w", encoding='utf-8') as configfile:
@@ -36,16 +36,23 @@ class MeowConfig:
     def get_openai_config(self) -> dict[str:str]:
         openai_config = self.config["OpenAI"]
         openai_access_token = openai_config["access_token"]
-        # openai_email = openai_config["email"]
-        # openai_password = openai_config["password"]
+        openai_email = openai_config["email"]
+        openai_password = openai_config["password"]
+        config = {
+            "access_token": "",
+            "email": "",
+            "password": ""
+        }
         if openai_access_token:
             logging.info("use openai access_token")
-            return {"access_token": openai_access_token}
-        # if openai_email and openai_password:
-        #     logging.info("use openai eamil {}".format(openai_email))
-        #     return {"email": openai_email, "password": openai_password}
-        else:
+            config['access_token'] = openai_access_token
+        elif openai_email and openai_password:
+            logging.info("use openai email {}".format(openai_email))
+            config["email"] = openai_email
+            config["password"] = openai_password
+        if (config["email"] == "" or config["password"] == "") and config["access_token"] == "":
             raise Exception("读取不到openai配置 请检查配置文件")
+        return config
 
     def get_promot(self) -> str:
         return self.config["OpenAI"]["prompt"]
