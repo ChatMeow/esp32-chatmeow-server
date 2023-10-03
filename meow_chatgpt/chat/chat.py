@@ -22,7 +22,7 @@ def generate_if_not_config_exists() -> bool:
     # config["OpenAI"]["password"] = ""
     config["OpenAI"]["conversation_id"] = ""
     config["OpenAI"]["prompt"] = ""
-    with open("./openai.ini", "w") as configfile:
+    with open("./openai.ini", "w", encoding='utf-8') as configfile:
         config.write(configfile)
     return True
 
@@ -30,20 +30,20 @@ def generate_if_not_config_exists() -> bool:
 class MeowConfig:
     def __init__(self) -> None:
         self.config = ConfigParser()
-        self.config.read("./openai.ini", encoding="UTF-8")
+        self.config.read("./openai.ini", encoding="utf-8")
         self.conversation_id = self.config["OpenAI"]["conversation_id"]
 
     def get_openai_config(self) -> dict[str:str]:
         openai_config = self.config["OpenAI"]
         openai_access_token = openai_config["access_token"]
-        openai_email = openai_config["email"]
-        openai_password = openai_config["password"]
+        # openai_email = openai_config["email"]
+        # openai_password = openai_config["password"]
         if openai_access_token:
             logging.info("use openai access_token")
             return {"access_token": openai_access_token}
-        if openai_email and openai_password:
-            logging.info("use openai eamil {}".format(openai_email))
-            return {"email": openai_email, "password": openai_password}
+        # if openai_email and openai_password:
+        #     logging.info("use openai eamil {}".format(openai_email))
+        #     return {"email": openai_email, "password": openai_password}
         else:
             raise Exception("读取不到openai配置 请检查配置文件")
 
@@ -56,7 +56,7 @@ class MeowConfig:
     def set_conversation_id(self, new_conversation_id: str):
         self.conversation_id = new_conversation_id
         self.config["OpenAI"]["conversation_id"] = new_conversation_id
-        with open("./openai.ini", "w") as configfile:
+        with open("./openai.ini", "w", encoding="utf-8") as configfile:
             self.config.write(configfile)
 
 
@@ -76,7 +76,7 @@ class ChatModule:
         if not conf.conversation_id:
             logging.info("对话id不存在 创建第一次会话")
             prompt = conf.get_promot()
-            self.chatbot = Chatbot(config=openai_config)
+            self.chatbot = Chatbot(config=openai_config, base_url="https://chatproxy.rockchin.top/api/")
 
             logging.info("YOU: {}".format(prompt))
             conversation_id, msg = self.get_conversation_id(prompt)
@@ -84,7 +84,8 @@ class ChatModule:
             conf.set_conversation_id(conversation_id)
         else:
             logging.info("对话id存在 使用对话id -> {}".format(conversation_id))
-            self.chatbot = Chatbot(config=openai_config, conversation_id=conversation_id)
+            self.chatbot = Chatbot(config=openai_config, conversation_id=conversation_id,
+                                   base_url="https://chatproxy.rockchin.top/api/")
 
     def get_conversation_id(self, prompt: str) -> (str, str):
         response = ""

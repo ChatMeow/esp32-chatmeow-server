@@ -3,7 +3,7 @@ import os
 import traceback
 import logging
 from configparser import ConfigParser
-
+import wave
 load_model = True
 
 def save_vits_wav(text, uuid):
@@ -16,13 +16,23 @@ def save_vits_wav(text, uuid):
             logging.error("vits音频文件生成失败 请检查配置文件参数")
             return False
         try:
-            if not os.path.exists(os.path.join(os.getcwd(), 'voice_tmp')):
-                logging.info("创建文件夹voice_tmp存放临时wav文件")
-                os.mkdir(os.path.join(os.getcwd(), 'voice_tmp'))
+            if not os.path.exists(os.path.join(os.getcwd(), 'static')):
+                os.mkdir(os.path.join(os.getcwd(), 'static'))
             scaled = np.int16(voice[1] / np.max(np.abs(voice[1])) * 32767)
-            file_path = os.path.join(os.getcwd(), 'voice_tmp', 'v' + uuid + '.wav')
-            write(file_path, 22050, scaled)
-            logging.info("成功生成WAV文件[v_{}.wav]".format(uuid))
+            file_path = os.path.join(os.getcwd(), 'static', 'out.wav')
+            data = np.vstack([scaled, scaled])  # 组合左右声道
+            data = data.T  # 转置（这里参考了双声道音频读取得到的格式）
+
+            # 打开目标文件，wb表示以二进制写方式打开，只能写文件，如果文件不存在，创建该文件；如果文件已存在，则覆盖写
+            wf = wave.open(file_path, 'wb')
+            wf.setnchannels(2)  # 设置声道数
+            wf.setsampwidth(2)  # 设置采样宽度
+            wf.setframerate(22050)  # 设置采样率
+            wf.writeframes(data.tobytes())  # 将data转换为二进制数据写入文件
+            wf.close()  # 关闭已打开的文件
+
+            # write(file_path, 44100, scaled)
+            logging.info("成功生成WAV文件".format(uuid))
             return True
         except Exception:
             traceback.print_exc()
